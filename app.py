@@ -26,5 +26,5 @@ def hello():
     return "<h1>Hello, World! 🎉 🔥</h1>"
 HTTP_NOT_FOUND = 404
 
-app.register_blueprint(movies_bp)
+app.register_blueprint(movies_bp, url_prefix="/api/movies")
 

@@ -1,5 +1,7 @@
 from flask import Blueprint
-
+from models.movie import Movie
+from extensions import db
+from sqlalchemy import select
 HTTP_NOT_FOUND = 404
 movies = [
     {
@@ -96,20 +98,36 @@ movies = [
 movies_bp = Blueprint("movies_bp", __name__)
 
 
-@movies_bp.route("/api/movies")
+@movies_bp.get("/")
 def movie_details():
-    return movies
+ 
+    #  Select * from moviesflask
+    #  Select * from movies - Black Box - Learning
+    data = db.session.execute(select(Movie).order_by(Movie.id)).scalars().all()
+    
 
+    # print(data[0].to_dict())
 
-@movies_bp.get("/api/movies/<id>")
+    empty_data =[]
+    for movie in data:
+        empty_data.append(movie.to_dict())
+
+    return empty_data
+
+# get//////////////////////////////
+@movies_bp.get("/")
 def get_movie_by_id(id):
-    for movie in movies:
-        if movie["id"] == id:
-            return movie
-    return "movie not found", 404
+    # for movie in movies:
+    #     if movie["id"] == id:
+    #         return movie
+    # return "movie not found", 404
+   data =db.session.get(Movie,id)
+   if not data:
+       return{"message":"movie not found"},404
+   return data.to_dict()
 
-
-@movies_bp.delete("/api/movies/<id>")
+# delete////////////////////
+@movies_bp.delete("/<id>")
 def delete_movie_by_id(id):
     for movie in movies:
         if movie["id"] == id:
