@@ -2,11 +2,12 @@ from flask import Blueprint, request
 from models.user import User
 from extensions import db
 from sqlalchemy import select
+from werkzeug.security import generate_password_hash, check_password_hash
 
 HTTP_NOT_FOUND = 404
 HTTP_SERVER_ERROR = 505
 HTTP_USER_ERROR = 500
-
+HTTP_CREATED = 201
 
 
 users_bp = Blueprint("users_bp", __name__)
@@ -25,16 +26,27 @@ def users_signup():
     if db_user:
         return {"error": "username already taken"}, HTTP_USER_ERROR
 
-    new_user = User(username=username, password=password)
-    db.session.add(new_user)  # temp
-    db.session.commit()
-    return new_user.to_dict()
+    try:
+        # new_user = User(username=username, password=password)
+        new_user = User(username=username, password=generate_password_hash(password))
 
+        db.session.add(new_user)  # temp
+        db.session.commit()
+
+    except Exception as err:
+        db.session.rollback()
+        return {"message": str(err)}, HTTP_SERVER_ERROR
+
+    return {
+        #    "data":new_user.to_dict(),
+        "data": {"id": new_user.id, "username": new_user.username},
+        "message": "User Signed up successfully",
+    }, HTTP_CREATED
 
 
 @users_bp.post("/login")
 def users_login():
-    data= request.get_json()
+    data = request.get_json()
     username = data.get("username")
     password = data.get("password")
 
@@ -44,9 +56,7 @@ def users_login():
     if not db_user:
         return {"error": "Invalid credentials"}, HTTP_USER_ERROR
 
-    if db_user.password != password:
-     return {"error": "Invalid credentials"}, HTTP_USER_ERROR
-    
-    return {"message": "Login Successful"}
+    if not db_user.password != password:
+        return {"error": "Invalid credentials"}, HTTP_USER_ERROR
 
-    
+    return {"message": "Login Successful"}
