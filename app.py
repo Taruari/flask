@@ -4,15 +4,23 @@ from flask import Flask
 from routes.movies_bp import movies_bp
 from routes.users_bp import users_bp
 from config import Config
-from extensions import db
+from extensions import db,jwt
 from sqlalchemy.sql import text
+from flask_cors import CORS
+
+HTTP_UNAUTHORIZED = 401
 
 
 app = Flask(__name__)
 app.config.from_object(Config)  # URL
 
 db.init_app(app)
+jwt.init_app(app)
+CORS(app)
 
+@jwt.unauthorized_loader
+def unauth(e):
+     return {"error": "missing/invalid token"}, HTTP_UNAUTHORIZED
 
 with app.app_context():
     try:

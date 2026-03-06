@@ -2,6 +2,7 @@ from flask import Blueprint, request
 from models.movie import Movie
 from extensions import db
 from sqlalchemy import select
+from flask_jwt_extended import jwt_required
 
 HTTP_NOT_FOUND = 404
 HTTP_SERVER_ERROR = 505
@@ -118,6 +119,7 @@ def movie_details():
 
 # get//////////////////////////////
 @movies_bp.get("/<id>")
+@jwt_required()
 def get_movie_by_id(id):
     # for movie in movies:
     #     if movie["id"] == id:
