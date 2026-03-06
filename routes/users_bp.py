@@ -13,7 +13,7 @@ users_bp = Blueprint("users_bp", __name__)
 
 
 @users_bp.post("/signup")
-def users_details():
+def users_signup():
 
     data = request.get_json()
     username = data.get("username")
@@ -31,92 +31,22 @@ def users_details():
     return new_user.to_dict()
 
 
-# try:
-#         db.session.add(new_user)  # temp
-#         db.session.commit()  # permanent
 
-# except Exception as err:
-#         db.session.rollback()  # Undo
-#       return {"message": str(err)}, HTTP_SERVER_ERROR
+@users_bp.post("/login")
+def users_login():
+    data= request.get_json()
+    username = data.get("username")
+    password = data.get("password")
 
-#    return {"data": new_user.to_dict(), "message": "user is  added successfully"}
+    stmt = select(User).where(User.username == username)
+    db_user = db.session.execute(stmt).scalar_one_or_none()
 
+    if not db_user:
+        return {"error": "Invalid credentials"}, HTTP_USER_ERROR
 
-#     empty_data = []
-#     for movie in data:
-#         empty_data.append(movie.to_dict())
+    if db_user.password != password:
+     return {"error": "Invalid credentials"}, HTTP_USER_ERROR
+    
+    return {"message": "Login Successful"}
 
-#     return empty_data
-
-
-# # get//////////////////////////////
-# @movies_bp.get("/<id>")
-# def get_movie_by_id(id):
-#     # for movie in movies:
-#     #     if movie["id"] == id:
-#     #         return movie
-#     # return "movie not found", 404
-#     data = db.session.get(Movie, id)
-#     if not data:
-#         return {"message": "movie not found"}, 404
-#     return data.to_dict()
-
-
-# # delete////////////////////
-# @movies_bp.delete("/<id>")
-# def delete_movie_by_id(id):
-#     for movie in movies:
-#         if movie["id"] == id:
-#             movies.remove(movie)
-#             return {"data": movie, "message": "movie delete successfully"}
-#     return {"message": "movie not found"}, HTTP_NOT_FOUND
-
-
-# @movies_bp.post("/")
-# def create_movie():
-#     # Data -> body as json
-#     data = request.get_json()
-
-#     new_movie = Movie(
-#         name=data.get("name"),
-#         poster=data.get("poster"),
-#         summary=data.get("summary"),
-#         rating=data.get("rating"),
-#         trailer=data.get("trailer"),
-#     )
-
-#     try:
-#         db.session.add(new_movie)  # temp
-#         db.session.commit()  # permanent
-
-#     except Exception as err:
-#         db.session.rollback()  # Undo
-#         return {"message": str(err)}, HTTP_SERVER_ERROR
-
-#     return {"data": new_movie.to_dict(), "message": "movie added successfully"}
-
-
-# @movies_bp.put("/<id>")
-# def update_movie(id):
-#     # Data -> body as json
-#     update_movie = request.get_json()
-
-#     db_movie = db.session.get(Movie, id)
-
-#     if not db_movie:
-#         return {"message": "movie not found"}, HTTP_NOT_FOUND
-
-#     # Avenger 3
-#     db_movie.name = update_movie.get("name")
-#     db_movie.poster = update_movie.get("poster")
-#     db_movie.summary = update_movie.get("summary")  # None
-#     db_movie.rating = update_movie.get("rating")
-#     db_movie.trailer = update_movie.get("trailer")  # None
-
-#     try:
-#         db.session.commit()  # permanent
-#     except Exception as err:
-#         db.session.rollback()  # Undo
-#         return {"message": str(err)}, HTTP_SERVER_ERROR
-
-#     return {"data": db_movie.to_dict(), "message": "movie updated successfully"}
+    
