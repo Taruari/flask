@@ -102,13 +102,14 @@ movies_bp = Blueprint("movies_bp", __name__)
 
 
 @movies_bp.get("/")
+
+
 def movie_details():
 
-    #  Select * from moviesflask
-    #  Select * from movies - Black Box - Learning
+    
     data = db.session.execute(select(Movie).order_by(Movie.id)).scalars().all()
 
-    # print(data[0].to_dict())
+
 
     empty_data = []
     for movie in data:
@@ -119,12 +120,9 @@ def movie_details():
 
 # get//////////////////////////////
 @movies_bp.get("/<id>")
-@jwt_required()
+
 def get_movie_by_id(id):
-    # for movie in movies:
-    #     if movie["id"] == id:
-    #         return movie
-    # return "movie not found", 404
+   
     data = db.session.get(Movie, id)
     if not data:
         return {"message": "movie not found"}, 404

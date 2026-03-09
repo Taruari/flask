@@ -26,24 +26,15 @@ def users_signup():
     if db_user:
         return {"error": "username already taken"}, HTTP_USER_ERROR
 
-    try:
-        # new_user = User(username=username, password=password)
-        new_user = User(username=username, password=generate_password_hash(password))
 
-        db.session.add(new_user)  # temp
-        db.session.commit()
+    new_user = User(username=username, password=password)
+        
 
-    except Exception as err:
-        db.session.rollback()
-        return {"message": str(err)}, HTTP_SERVER_ERROR
+    db.session.add(new_user)  # temp
+    db.session.commit()
+    return new_user.to_dict()
 
-    return {
-        #    "data":new_user.to_dict(),
-        "data": {"id": new_user.id, "username": new_user.username},
-        "message": "User Signed up successfully",
-    }, HTTP_CREATED
-
-
+ 
 @users_bp.post("/login")
 def users_login():
     data = request.get_json()
@@ -60,3 +51,4 @@ def users_login():
         return {"error": "Invalid credentials"}, HTTP_USER_ERROR
 
     return {"message": "Login Successful"}
+

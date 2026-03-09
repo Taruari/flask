@@ -14,13 +14,23 @@ HTTP_UNAUTHORIZED = 401
 app = Flask(__name__)
 app.config.from_object(Config)  # URL
 
+
+CORS(app)
+
+
 db.init_app(app)
 jwt.init_app(app)
-CORS(app)
+
 
 @jwt.unauthorized_loader
 def unauth(e):
      return {"error": "missing/invalid token"}, HTTP_UNAUTHORIZED
+
+
+
+@jwt.expired_token_loader
+def _expired(h, p):
+    return ({"error": "token expired"}), HTTP_UNAUTHORIZED
 
 with app.app_context():
     try:
