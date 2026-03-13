@@ -12,10 +12,12 @@ HTTP_UNAUTHORIZED = 401
 
 
 app = Flask(__name__)
+CORS(app)
+
 app.config.from_object(Config)  # URL
 
 
-CORS(app)
+
 
 
 db.init_app(app)

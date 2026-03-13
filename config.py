@@ -1,9 +1,10 @@
 from os import environ
 from dotenv import load_dotenv
-from datetime import timedelta
+# from datetime import timedelta
 
 load_dotenv()
 print(environ.get("DATABASE_URL"))
+
 
 
 class Config:
@@ -14,4 +15,4 @@ class Config:
 
     JWT_SECRET_KEY = environ.get("SECRET_KEY")
     JWT_TOKEN_LOCATION = ["headers"]
-    JWT_ACCESS_TOKEN_EXPIRES = timedelta(minutes=30)
+    # JWT_ACCESS_TOKEN_EXPIRES = timedelta(minutes=120)

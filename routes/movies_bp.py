@@ -6,6 +6,7 @@ from flask_jwt_extended import jwt_required
 
 HTTP_NOT_FOUND = 404
 HTTP_SERVER_ERROR = 505
+HTTP_CREATED = 201
 movies = [
     {
         "name": "Thor: Ragnarok",
@@ -101,9 +102,9 @@ movies = [
 movies_bp = Blueprint("movies_bp", __name__)
 
 
+@movies_bp.get("")
 @movies_bp.get("/")
-
-
+@jwt_required()
 def movie_details():
 
     
@@ -120,26 +121,36 @@ def movie_details():
 
 # get//////////////////////////////
 @movies_bp.get("/<id>")
-
+@jwt_required()
 def get_movie_by_id(id):
-   
+  
     data = db.session.get(Movie, id)
     if not data:
-        return {"message": "movie not found"}, 404
+     return {"message": "movie not found"}, HTTP_NOT_FOUND
     return data.to_dict()
 
 
 # delete////////////////////
 @movies_bp.delete("/<id>")
 def delete_movie_by_id(id):
-    for movie in movies:
-        if movie["id"] == id:
-            movies.remove(movie)
-            return {"data": movie, "message": "movie delete successfully"}
-    return {"message": "movie not found"}, HTTP_NOT_FOUND
+    movie = db.session.get(Movie, id)
+
+    if not movie:
+        return {"message": "movie not found"}, HTTP_NOT_FOUND
+    
+    try:
+         db.session.delete(movie)
+         db.session.commit()
+
+    except Exception as err:
+        db.session.rollback()
+        return {"message": str(err)}, HTTP_SERVER_ERROR
+    
+    return {"data": movie.to_dict(), "message": "movie delete successfully"}
 
 
-@movies_bp.post("/")
+
+@movies_bp.post("")
 def create_movie():
     # Data -> body as json
     data = request.get_json()
@@ -159,8 +170,10 @@ def create_movie():
     except Exception as err:
         db.session.rollback()  # Undo
         return {"message": str(err)}, HTTP_SERVER_ERROR
-
-    return {"data": new_movie.to_dict(), "message": "movie added successfully"}
+    return {
+        "data": new_movie.to_dict(),
+        "message": "movie added successfully",
+    }, HTTP_CREATED
 
 
 @movies_bp.put("/<id>")
